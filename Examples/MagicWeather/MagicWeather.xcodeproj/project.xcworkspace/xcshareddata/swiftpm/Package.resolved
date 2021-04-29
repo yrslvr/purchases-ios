@@ -5,8 +5,8 @@
         "package": "Purchases",
         "repositoryURL": "https://github.com/RevenueCat/purchases-ios.git",
         "state": {
-          "branch": "feature/identityV3_public_facing_changes",
-          "revision": "a20557204bc082f5baa6e713b5514a7fc9cee9d9",
+          "branch": "identityv3_bug_bash",
+          "revision": "2c25e4a9d35189350585d34530a0eaa9be0f1f34",
           "version": null
         }
       }

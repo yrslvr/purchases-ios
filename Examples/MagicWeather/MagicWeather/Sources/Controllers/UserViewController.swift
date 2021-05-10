@@ -28,11 +28,9 @@ class UserViewController: UIViewController {
     func refreshUserDetails() {
         self.userIdLabel.text = Purchases.shared.appUserID
         
-        if Purchases.shared.isAnonymous {
-            self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Log In", style: .done, target: self, action: #selector(presentLoginDialog))
-        } else {
-            self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Log Out", style: .done, target: self, action: #selector(logout))
-        }
+        self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Log In", style: .done, target: self, action: #selector(presentLoginDialog))
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Log Out", style: .done, target: self, action: #selector(logout))
+        
         
         Purchases.shared.purchaserInfo { (purchaserInfo, error) in
             if purchaserInfo?.entitlements[Constants.entitlementID]?.isActive == true {

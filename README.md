@@ -1,7 +1,4 @@
-<p align="center">
-  <img src="https://d2jzmbury1aqmc.cloudfront.net/assets/images/build.svg" alt="RevenueCat"/>
-</p>
-<h3 align="center">😻 In-app Subscriptions Made Easy 😻</h1>
+<h3 align="center">😻 In-App Subscriptions Made Easy 😻</h1>
 
 [![License](https://img.shields.io/cocoapods/l/Purchases.svg?style=flat)](http://cocoapods.org/pods/Purchases)
 [![Version](https://img.shields.io/cocoapods/v/Purchases.svg?style=flat)](https://cocoapods.org/pods/Purchases)
@@ -10,7 +7,7 @@
 
 ## Purchases.framework
 
-*Purchases* is a client for the [RevenueCat](https://www.revenuecat.com/) subscription and purchase tracking system. It is an open source framework that provides a wrapper around `StoreKit` and the RevenueCat backend to make implementing in-app subscriptions in `Swift` or `Objective-C` easy - receipt validation and status tracking included!
+*Purchases* is an open source framework that provides a wrapper around `StoreKit` and the [RevenueCat](https://www.revenuecat.com/) backend to make implementing in-app subscriptions in `Swift` or `Objective-C` easy - receipt validation and status tracking included.
 
 ## Features
 |   | RevenueCat |

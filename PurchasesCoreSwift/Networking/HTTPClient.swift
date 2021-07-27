@@ -96,8 +96,8 @@ private extension HTTPClient {
         } catch let error {
             if let maybeCompletionHandler = completionHandler {
                 maybeCompletionHandler(-1, nil, error)
-                return
             }
+            return
         }
 
         var requestHeaders = defaultHeaders
@@ -287,17 +287,9 @@ private extension HTTPClient {
     }
 
     func assertIsValidRequest(httpMethod: String, requestBody: [String: Any]?) throws {
-        guard httpMethod == "GET" || httpMethod == "POST" else {
-            throw HTTPClientError.invalidNetworkCall(httpMethod, requestBody: requestBody)
-        }
-
-        let isRequestBodyEmpty = (requestBody ?? [:]).isEmpty
-
-        if httpMethod == "GET" && !isRequestBodyEmpty {
-            throw HTTPClientError.invalidNetworkCall(httpMethod, requestBody: requestBody)
-        }
-
-        if httpMethod == "POST" && isRequestBodyEmpty {
+        if (httpMethod != "GET" && httpMethod != "POST") ||
+                   (httpMethod == "GET" && requestBody != nil) ||
+                   (httpMethod == "POST" && requestBody == nil) {
             throw HTTPClientError.invalidNetworkCall(httpMethod, requestBody: requestBody)
         }
     }

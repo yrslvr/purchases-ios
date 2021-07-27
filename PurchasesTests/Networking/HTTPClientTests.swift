@@ -41,7 +41,7 @@ class HTTPClientTests: XCTestCase {
                                    headers: nil) { _, _, error in
             maybeError = error
         }
-        expect(maybeError).toNot(beNil())
+        expect(maybeError).toEventuallyNot(beNil())
     }
 
     func testUnrecognizedMethodFails() {
@@ -50,7 +50,7 @@ class HTTPClientTests: XCTestCase {
                                    headers: nil) { _, _, error in
             maybeError = error
         }
-        expect(maybeError).toNot(beNil())
+        expect(maybeError).toEventuallyNot(beNil())
     }
 
     func testUsesTheCorrectHost() {
@@ -648,7 +648,7 @@ class HTTPClientTests: XCTestCase {
                                    headers: nil) { _, _, error in
             maybeError = error
         }
-        expect(maybeError).toNot(beNil())
+        expect(maybeError).toEventuallyNot(beNil())
     }
 
     func testPerformRequestExitsWithErrorIfBodyCouldntBeParsedIntoJSON() {

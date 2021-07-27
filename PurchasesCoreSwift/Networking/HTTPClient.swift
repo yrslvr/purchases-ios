@@ -16,7 +16,7 @@ import Foundation
 // TODO (post-migration): set this back to internal
 @objc(RCHTTPClient) public class HTTPClient: NSObject {
 
-    private let accessQueue = DispatchQueue(label: "HTTPClientQueue", attributes: .concurrent)
+    private let accessQueue = DispatchQueue(label: "HTTPClientQueue")
 
     let session: URLSession
     let systemInfo: SystemInfo
@@ -39,17 +39,21 @@ import Foundation
                                      requestBody: [String: Any]?,
                                      headers: [String: String]?,
                                      completionHandler: HTTPClientResponseHandler?) {
-        performRequest(httpMethod,
-                       performSerially: performSerially,
-                       path: path,
-                       requestBody: requestBody,
-                       headers: headers,
-                       retried: false,
-                       completionHandler: completionHandler)
+        accessQueue.async { [self] in
+            self.performRequest(httpMethod,
+                                performSerially: performSerially,
+                                path: path,
+                                requestBody: requestBody,
+                                headers: headers,
+                                retried: false,
+                                completionHandler: completionHandler)
+        }
     }
 
     @objc public func clearCaches() {
-        self.eTagManager.clearCaches()
+        accessQueue.async { [self] in
+            self.eTagManager.clearCaches()
+        }
     }
 
 }
@@ -86,6 +90,7 @@ private extension HTTPClient {
                         headers: [String: String]?,
                         retried: Bool = false,
                         completionHandler: HTTPClientResponseHandler?) {
+
         do {
             try assertIsValidRequest(httpMethod: httpMethod, requestBody: requestBody)
         } catch let error {
@@ -118,38 +123,40 @@ private extension HTTPClient {
                                     retried: retried, completionHandler: completionHandler)
 
         if performSerially && !retried {
-            accessQueue.sync(flags: .barrier) { [self] in
-                if self.currentSerialRequest != nil {
-                    let message =
-                        String(format: Strings.network.serial_request_queued, self.queuedRequests.count, httpMethod, path)
-                    Logger.debug(message)
-                    self.queuedRequests.append(rcRequest)
-                    return
-                } else {
-                    let message = String(format: Strings.network.starting_request, httpMethod, path)
-                    Logger.debug(message)
-                    self.currentSerialRequest = rcRequest
-                }
+            if self.currentSerialRequest != nil {
+                let message =
+                String(format: Strings.network.serial_request_queued, self.queuedRequests.count, httpMethod, path)
+                Logger.debug(message)
+                self.queuedRequests.append(rcRequest)
+                return
+            } else {
+                let message = String(format: Strings.network.starting_request, httpMethod, path)
+                Logger.debug(message)
+                self.currentSerialRequest = rcRequest
             }
         }
 
         let message =
-            String(format: Strings.network.api_request_started,
-                   maybeURLRequest.httpMethod ?? "",
-                   maybeURLRequest.url?.path ?? "")
+        String(format: Strings.network.api_request_started,
+               maybeURLRequest.httpMethod ?? "",
+               maybeURLRequest.url?.path ?? "")
         Logger.debug(message)
 
         let task = session.dataTask(with: maybeURLRequest) { (data: Data?, response: URLResponse?, error: Error?) -> Void in
-            self.handleResponse(response: response,
-                                data: data,
-                                error: error,
-                                request: maybeURLRequest,
-                                completionHandler: completionHandler,
-                                beginNextRequestWhenFinished: performSerially,
-                                queableRequest: rcRequest,
-                                retried: retried)
+            self.accessQueue.sync {
+                self.handleResponse(response: response,
+                                    data: data,
+                                    error: error,
+                                    request: maybeURLRequest,
+                                    completionHandler: completionHandler,
+                                    beginNextRequestWhenFinished: performSerially,
+                                    queableRequest: rcRequest,
+                                    retried: retried)
+
+            }
         }
         task.resume()
+
     }
 
     // swiftlint:disable function_parameter_count
@@ -171,8 +178,8 @@ private extension HTTPClient {
             if let httpURLResponse = response as? HTTPURLResponse {
                 statusCode = httpURLResponse.statusCode
                 let message =
-                    String(format: Strings.network.api_request_completed,
-                           request.httpMethod ?? "", request.url?.path ?? "", statusCode)
+                String(format: Strings.network.api_request_completed,
+                       request.httpMethod ?? "", request.url?.path ?? "", statusCode)
                 Logger.debug(message)
 
                 var jsonError: Error?
@@ -181,8 +188,8 @@ private extension HTTPClient {
                 } else if let maybeData = data {
                     do {
                         jsonObject =
-                            try JSONSerialization.jsonObject(with: maybeData,
-                                                             options: .mutableContainers) as? [String: Any]
+                        try JSONSerialization.jsonObject(with: maybeData,
+                                                         options: .mutableContainers) as? [String: Any]
                     } catch let error {
                         jsonError = error
                     }
@@ -200,14 +207,12 @@ private extension HTTPClient {
                 httpResponse = eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
                                                                         jsonObject: jsonObject, error: maybeError, request: request, retried: retried)
                 if httpResponse == nil {
-                    accessQueue.sync(flags: .barrier) { [self] in
-                        let message = String(format: Strings.network.retrying_request, queableRequest.httpMethod,
-                                             queableRequest.path)
-                        Logger.debug(message)
-                        let retriedRequest = HTTPRequest(RCHTTPRequest: queableRequest, retried: true)
-                        queuedRequests.insert(retriedRequest, at: 0)
-                        shouldBeginNextRequestWhenFinished = true
-                    }
+                    let message = String(format: Strings.network.retrying_request, queableRequest.httpMethod,
+                                         queableRequest.path)
+                    Logger.debug(message)
+                    let retriedRequest = HTTPRequest(RCHTTPRequest: queableRequest, retried: true)
+                    queuedRequests.insert(retriedRequest, at: 0)
+                    shouldBeginNextRequestWhenFinished = true
                 }
             }
         }
@@ -219,18 +224,16 @@ private extension HTTPClient {
 
         if shouldBeginNextRequestWhenFinished {
             var nextRequest: HTTPRequest?
-            accessQueue.sync(flags: .barrier) { [self] in
-                let message = String(
-                    format: Strings.network.serial_request_done,
-                    self.currentSerialRequest?.httpMethod ?? "",
-                    self.currentSerialRequest?.path ?? "",
-                    self.queuedRequests.count)
-                Logger.debug(message)
-                self.currentSerialRequest = nil
-                if !self.queuedRequests.isEmpty {
-                    nextRequest = self.queuedRequests[0]
-                    self.queuedRequests.remove(at: 0)
-                }
+            let message = String(
+                format: Strings.network.serial_request_done,
+                self.currentSerialRequest?.httpMethod ?? "",
+                self.currentSerialRequest?.path ?? "",
+                self.queuedRequests.count)
+            Logger.debug(message)
+            self.currentSerialRequest = nil
+            if !self.queuedRequests.isEmpty {
+                nextRequest = self.queuedRequests[0]
+                self.queuedRequests.remove(at: 0)
             }
             if let maybeNextRequest = nextRequest {
                 Logger.debug(String(format: Strings.network.starting_next_request, maybeNextRequest))
@@ -268,7 +271,7 @@ private extension HTTPClient {
                 if isValidJSONObject {
                     do {
                         request.httpBody =
-                            try JSONSerialization.data(withJSONObject: maybeRequestBody)
+                        try JSONSerialization.data(withJSONObject: maybeRequestBody)
                     } catch let error {
                         jsonParseError = error
                     }

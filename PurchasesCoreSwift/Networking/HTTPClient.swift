@@ -96,6 +96,7 @@ private extension HTTPClient {
         } catch let error {
             if let maybeCompletionHandler = completionHandler {
                 maybeCompletionHandler(-1, nil, error)
+                return
             }
         }
 

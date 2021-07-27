@@ -286,9 +286,17 @@ private extension HTTPClient {
     }
 
     func assertIsValidRequest(httpMethod: String, requestBody: [String: Any]?) throws {
-        if httpMethod != "GET" && httpMethod != "POST" ||
-            httpMethod == "GET" && requestBody != nil ||
-            httpMethod == "POST" && requestBody == nil {
+        guard httpMethod == "GET" || httpMethod == "POST" else {
+            throw HTTPClientError.invalidNetworkCall(httpMethod, requestBody: requestBody)
+        }
+
+        let isRequestBodyEmpty = (requestBody ?? [:]).isEmpty
+
+        if httpMethod == "GET" && !isRequestBodyEmpty {
+            throw HTTPClientError.invalidNetworkCall(httpMethod, requestBody: requestBody)
+        }
+
+        if httpMethod == "POST" && isRequestBodyEmpty {
             throw HTTPClientError.invalidNetworkCall(httpMethod, requestBody: requestBody)
         }
     }

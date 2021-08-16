@@ -121,6 +121,12 @@ import AppKit
         return ProcessInfo.processInfo.isOperatingSystemAtLeast(version)
     }
 
+    #if os(iOS)
+    var sharedUIApplication: UIApplication? {
+        UIApplication.value(forKey: "sharedApplication") as? UIApplication
+    }
+    #endif
+
 }
 
 @objc public extension SystemInfo {
@@ -143,6 +149,10 @@ import AppKit
         #elseif os(watchOS)
             Notification.Name.NSExtensionHostWillResignActive
         #endif
+    }
+
+    var isAppExtension: Bool {
+        return Bundle.main.bundlePath.hasSuffix(".appex")
     }
 
 }
@@ -170,14 +180,6 @@ private extension SystemInfo {
 
         guard let sharedUIApplication = self.sharedUIApplication else { return false }
         return sharedUIApplication.applicationState == UIApplication.State.background
-    }
-
-    var isAppExtension: Bool {
-        return Bundle.main.bundlePath.hasSuffix(".appex")
-    }
-
-    var sharedUIApplication: UIApplication? {
-        UIApplication.value(forKey: "sharedApplication") as? UIApplication
     }
 
     #endif

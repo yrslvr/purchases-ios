@@ -455,6 +455,16 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 }
 
+- (void)openManageSubscriptionsURL {
+    ManageSubscriptionsModalHelper *helper = [[ManageSubscriptionsModalHelper alloc]
+                                              initWithSystemInfo:self.systemInfo
+                                              purchaserInfoManager:self.purchaserInfoManager
+                                              identityManager:self.identityManager];
+#if TARGET_OS_IOS || TARGET_OS_OSX
+    [helper showManageSubscriptionModal];
+#endif
+}
+
 - (void)identify:(NSString *)appUserID completionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
     if ([appUserID isEqualToString:self.identityManager.currentAppUserID]) {
         [self purchaserInfoWithCompletionBlock:completion];

@@ -35,6 +35,8 @@ import AppKit
         case invalidInitializationData
     }
 
+    let appleSubscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")
+
     private static let defaultServerHostName = "https://api.revenuecat.com"
 
     @objc public var finishTransactions: Bool
@@ -126,6 +128,10 @@ import AppKit
         UIApplication.value(forKey: "sharedApplication") as? UIApplication
     }
     #endif
+
+    func isAppleSubscription(managementURL: URL) -> Bool {
+        managementURL.absoluteString.contains("apps.apple.com")
+    }
 
 }
 

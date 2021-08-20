@@ -455,12 +455,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 }
 
-- (void)openManageSubscriptionsURL {
+- (void)openManageSubscriptionsURL API_AVAILABLE(ios(12.2), macos(10.14.4)) {
+#if TARGET_OS_IOS || TARGET_OS_OSX
     ManageSubscriptionsModalHelper *helper = [[ManageSubscriptionsModalHelper alloc]
                                               initWithSystemInfo:self.systemInfo
                                               purchaserInfoManager:self.purchaserInfoManager
                                               identityManager:self.identityManager];
-#if TARGET_OS_IOS || TARGET_OS_OSX
     [helper showManageSubscriptionModal];
 #endif
 }

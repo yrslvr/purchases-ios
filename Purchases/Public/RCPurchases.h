@@ -577,9 +577,6 @@ NS_SWIFT_NAME(syncPurchases(_:));
  */
 - (void)collectDeviceIdentifiers;
 
-// todo: remove
-- (void)openManageSubscriptionsURL API_AVAILABLE(ios(12.2), macos(10.14.4));
-
 #pragma mark Unavailable Methods
 #define RC_UNAVAILABLE(msg) __attribute__((unavailable(msg)));
 /// :nodoc:

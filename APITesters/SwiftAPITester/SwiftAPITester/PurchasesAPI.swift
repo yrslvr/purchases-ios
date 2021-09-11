@@ -106,16 +106,16 @@ private func checkStaticMethods() {
 
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let piComplete: ReceivePurchaserInfoBlock = { _, _ in }
-    purchases.purchaserInfo(piComplete)
+    purchases.purchaserInfo(completionBlock: piComplete)
     purchases.purchaserInfo { _, _ in }
 
     let offeringsComplete: ReceiveOfferingsBlock = { _, _ in }
-    purchases.offerings(offeringsComplete)
+    purchases.offerings(completionBlock: offeringsComplete)
     purchases.offerings { _, _ in }
 
     let productsComplete: ReceiveProductsBlock = { _ in }
-    purchases.products([String](), productsComplete)
-    purchases.products([String]()) { _ in }
+    purchases.products(identifiers: [String](), completionBlock: productsComplete)
+    purchases.products(identifiers: [String]()) { _ in }
 
     let skp: SKProduct = SKProduct()
     let skpd: SKProductDiscount = SKProductDiscount()
@@ -123,16 +123,16 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let pack: Package! = nil
 
     let purchaseProductComplete: PurchaseCompletedBlock = { _, _, _, _  in }
-    purchases.purchase(product: skp, purchaseProductComplete)
+    purchases.purchase(product: skp, completion: purchaseProductComplete)
     purchases.purchase(product: skp) { _, _, _, _  in }
-    purchases.purchase(package: pack, purchaseProductComplete)
+    purchases.purchase(package: pack, completion: purchaseProductComplete)
     purchases.purchase(package: pack) { _, _, _, _  in }
 
-    purchases.restoreTransactions(piComplete)
-    purchases.syncPurchases(piComplete)
+    purchases.restoreTransactions(completionBlock: piComplete)
+    purchases.syncPurchases(completionBlock: piComplete)
 
     let checkEligComplete: ([String: IntroEligibility]) -> Void = { _ in }
-    purchases.checkTrialOrIntroductoryPriceEligibility([String](), completion: checkEligComplete)
+    purchases.checkTrialOrIntroductoryPriceEligibility([String](), completionBlock: checkEligComplete)
     purchases.checkTrialOrIntroductoryPriceEligibility([String]()) { _ in }
 
     let discountComplete: PaymentDiscountBlock = { _, _ in }
@@ -159,22 +159,22 @@ private func checkIdentity(purchases: Purchases) {
     let piComplete: ReceivePurchaserInfoBlock = { _, _ in }
 
     // should have deprecation warning 'createAlias' is deprecated: Use logIn instead.
-    purchases.createAlias("", piComplete)
+    purchases.createAlias("", completionBlock: piComplete)
     purchases.createAlias("") { _, _ in }
 
     // should have deprecation warning 'identify' is deprecated: Use logIn instead.
-    purchases.identify("", piComplete)
+    purchases.identify("", completionBlock: piComplete)
     purchases.identify("") { _, _ in }
 
     // should have deprecation warning 'reset' is deprecated: Use logOut instead.
-    purchases.reset(piComplete)
+    purchases.reset(completionBlock: piComplete)
     purchases.reset { _, _ in }
 
-    purchases.logOut(piComplete)
+    purchases.logOut(completionBlock: piComplete)
 
     let loginComplete: (PurchaserInfo?, Bool, Error?) -> Void = { _, _, _ in }
-    purchases.logIn("", loginComplete)
-    purchases.logIn("") { _, _, _ in }
+    purchases.logIn(appUserID: "", completionBlock: loginComplete)
+    purchases.logIn(appUserID: "") { _, _, _ in }
 }
 
 private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {

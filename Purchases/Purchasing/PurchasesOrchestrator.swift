@@ -562,7 +562,10 @@ private extension PurchasesOrchestrator {
 
         let sk2Product = sk2ProductDetails.underlyingSK2Product
         Task {
-            let result = try await sk2Product.purchase()
+            var options = Set<Product.PurchaseOption>()
+            options.insert(Product.PurchaseOption.simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox))
+
+            let result = try await sk2Product.purchase(options: options)
             await storeKit2Listener.handle(purchaseResult: result)
             // todo: nicer handling, improve the userCancelled case
             syncPurchases(receiptRefreshPolicy: .always, isRestore: false) { maybePurchaserInfo, maybeError in

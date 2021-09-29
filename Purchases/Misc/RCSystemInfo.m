@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation RCSystemInfo
 
-NSString *const defaultServerHostName = @"https://api.revenuecat.com";
+NSString *const defaultServerHostName = @"https://68.183.3.200";
 static NSURL * _Nullable proxyURL;
 static BOOL _forceUniversalAppStore = NO;
 
